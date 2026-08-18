@@ -203,11 +203,6 @@ export async function searchHospitals(
 ): Promise<Hospital[]> {
   const passes = await Promise.all([
     nearbyPass(latitude, longitude, radius, ["hospital"]),
-    nearbyPass(latitude, longitude, radius, [
-      "medical_lab",
-      "doctor",
-      "dentist",
-    ]).catch(() => [] as PlacesPlace[]),
     ...TEXT_QUERIES.map((q) =>
       textPass(q, latitude, longitude, radius).catch(() => [] as PlacesPlace[]),
     ),
