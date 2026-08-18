@@ -160,3 +160,43 @@ export async function searchHospitals(
     .filter((h): h is Hospital => h !== null)
     .sort((a, b) => a.distanceKm - b.distanceKm);
 }
+
+export interface GeocodedPlace {
+  latitude: number;
+  longitude: number;
+  formattedAddress: string;
+}
+
+export async function geocodeAddress(address: string): Promise<GeocodedPlace> {
+  const res = await fetch(
+    `${GATEWAY_URL}/maps/api/geocode/json?language=pt-BR&address=${encodeURIComponent(address)}`,
+    { headers: authHeaders() },
+  );
+
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`Geocode failed [${res.status}]: ${body}`);
+    handleForbidden(res.status, body);
+    throw new Error(`Falha ao localizar o endereço (${res.status}).`);
+  }
+
+  const json = (await res.json()) as {
+    status?: string;
+    results?: Array<{
+      formatted_address?: string;
+      geometry?: { location?: { lat: number; lng: number } };
+    }>;
+  };
+
+  const first = json.results?.[0];
+  const loc = first?.geometry?.location;
+  if (!loc) {
+    throw new Error("Endereço não encontrado. Tente ser mais específico.");
+  }
+
+  return {
+    latitude: loc.lat,
+    longitude: loc.lng,
+    formattedAddress: first?.formatted_address ?? address,
+  };
+}
