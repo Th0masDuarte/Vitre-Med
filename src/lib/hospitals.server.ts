@@ -277,36 +277,80 @@ export interface GeocodedPlace {
   formattedAddress: string;
 }
 
-export async function geocodeAddress(address: string): Promise<GeocodedPlace> {
-  const res = await fetch(
-    `${GATEWAY_URL}/maps/api/geocode/json?language=pt-BR&address=${encodeURIComponent(address)}`,
-    { headers: authHeaders() },
-  );
+async function geocodeViaPlaces(
+  address: string,
+): Promise<GeocodedPlace | null> {
+  const res = await fetch(`${GATEWAY_URL}/places/v1/places:searchText`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+      "X-Goog-FieldMask":
+        "places.location,places.formattedAddress,places.displayName",
+    },
+    body: JSON.stringify({
+      textQuery: address,
+      languageCode: "pt-BR",
+      regionCode: "BR",
+      pageSize: 1,
+    }),
+  });
 
   if (!res.ok) {
     const body = await res.text();
-    console.error(`Geocode failed [${res.status}]: ${body}`);
+    console.error(`Places geocode fallback failed [${res.status}]: ${body}`);
     handleForbidden(res.status, body);
-    throw new Error(`Falha ao localizar o endereço (${res.status}).`);
+    return null;
   }
 
-  const json = (await res.json()) as {
-    status?: string;
-    results?: Array<{
-      formatted_address?: string;
-      geometry?: { location?: { lat: number; lng: number } };
-    }>;
-  };
-
-  const first = json.results?.[0];
-  const loc = first?.geometry?.location;
-  if (!loc) {
-    throw new Error("Endereço não encontrado. Tente ser mais específico.");
-  }
+  const json = (await res.json()) as { places?: PlacesPlace[] };
+  const place = json.places?.[0];
+  const loc = place?.location;
+  if (!loc) return null;
 
   return {
-    latitude: loc.lat,
-    longitude: loc.lng,
-    formattedAddress: first?.formatted_address ?? address,
+    latitude: loc.latitude,
+    longitude: loc.longitude,
+    formattedAddress:
+      place?.formattedAddress ?? place?.displayName?.text ?? address,
   };
+}
+
+export async function geocodeAddress(address: string): Promise<GeocodedPlace> {
+  const res = await fetch(
+    `${GATEWAY_URL}/maps/api/geocode/json?language=pt-BR&region=br&address=${encodeURIComponent(address)}`,
+    { headers: authHeaders() },
+  );
+
+  if (res.ok) {
+    const json = (await res.json()) as {
+      status?: string;
+      results?: Array<{
+        formatted_address?: string;
+        geometry?: { location?: { lat: number; lng: number } };
+      }>;
+    };
+
+    const first = json.results?.[0];
+    const loc = first?.geometry?.location;
+    if (loc) {
+      return {
+        latitude: loc.lat,
+        longitude: loc.lng,
+        formattedAddress: first?.formatted_address ?? address,
+      };
+    }
+    console.error(`Geocode returned no results (status=${json.status})`);
+  } else {
+    const body = await res.text();
+    console.error(`Geocode failed [${res.status}]: ${body}`);
+    handleForbidden(res.status, body);
+  }
+
+  const fallback = await geocodeViaPlaces(address);
+  if (fallback) return fallback;
+
+  throw new Error(
+    "Endereço não encontrado. Tente incluir a cidade e o estado, por exemplo: \"Centro, Campinas SP\".",
+  );
 }
