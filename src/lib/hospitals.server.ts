@@ -217,6 +217,7 @@ export async function searchHospitals(
     .filter((p) => {
       const loc = p.location;
       if (!loc) return false;
+      if (!hasAllowedName(p.displayName?.text)) return false;
       return (
         haversine(latitude, longitude, loc.latitude, loc.longitude) <=
         radius / 1000 + 0.5
