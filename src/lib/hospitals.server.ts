@@ -218,20 +218,26 @@ export async function searchHospitals(
     if (place.id && !byId.has(place.id)) byId.set(place.id, place);
   }
 
-  const places = [...byId.values()].filter((p) => {
-    const loc = p.location;
-    if (!loc) return false;
-    return (
-      haversine(latitude, longitude, loc.latitude, loc.longitude) <=
-      radius / 1000 + 0.5
-    );
-  });
+  const places = [...byId.values()]
+    .filter((p) => {
+      const loc = p.location;
+      if (!loc) return false;
+      return (
+        haversine(latitude, longitude, loc.latitude, loc.longitude) <=
+        radius / 1000 + 0.5
+      );
+    })
+    .sort((a, b) => {
+      const da = haversine(latitude, longitude, a.location!.latitude, a.location!.longitude);
+      const db = haversine(latitude, longitude, b.location!.latitude, b.location!.longitude);
+      return da - db;
+    });
 
   const hospitals = await Promise.all(
-    places.map(async (p): Promise<Hospital | null> => {
+    places.map(async (p, index): Promise<Hospital | null> => {
       const loc = p.location;
       if (!loc) return null;
-      const photoName = p.photos?.[0]?.name;
+      const photoName = index < 30 ? p.photos?.[0]?.name : undefined;
       const photoUrl = photoName ? await resolvePhoto(photoName) : undefined;
       return {
         id: p.id,
