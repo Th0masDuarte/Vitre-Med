@@ -85,50 +85,147 @@ async function resolvePhoto(photoName: string): Promise<string | undefined> {
   return json.photoUri;
 }
 
+const FIELD_MASK = [
+  "places.id",
+  "places.displayName",
+  "places.formattedAddress",
+  "places.location",
+  "places.rating",
+  "places.userRatingCount",
+  "places.nationalPhoneNumber",
+  "places.websiteUri",
+  "places.googleMapsUri",
+  "places.currentOpeningHours.openNow",
+  "places.photos",
+].join(",");
+
+const TEXT_QUERIES = [
+  "hospital",
+  "pronto-socorro",
+  "UPA unidade de pronto atendimento",
+  "hospital infantil",
+  "maternidade",
+];
+
+async function placesRequest(
+  path: string,
+  body: unknown,
+  extraFieldMask = "",
+): Promise<PlacesPlace[]> {
+  const res = await fetch(`${GATEWAY_URL}/places/v1/${path}`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+      "X-Goog-FieldMask": FIELD_MASK + extraFieldMask,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error(`Places ${path} failed [${res.status}]: ${text}`);
+    handleForbidden(res.status, text);
+    throw new Error(`Falha ao buscar hospitais (${res.status}).`);
+  }
+
+  return ((await res.json()) as { places?: PlacesPlace[] }).places ?? [];
+}
+
+async function nearbyPass(
+  latitude: number,
+  longitude: number,
+  radius: number,
+  includedTypes: string[],
+): Promise<PlacesPlace[]> {
+  return placesRequest("places:searchNearby", {
+    includedTypes,
+    maxResultCount: 20,
+    rankPreference: "DISTANCE",
+    languageCode: "pt-BR",
+    locationRestriction: {
+      circle: { center: { latitude, longitude }, radius },
+    },
+  });
+}
+
+async function textPass(
+  textQuery: string,
+  latitude: number,
+  longitude: number,
+  radius: number,
+): Promise<PlacesPlace[]> {
+  const collected: PlacesPlace[] = [];
+  let pageToken: string | undefined;
+
+  for (let page = 0; page < 3; page++) {
+    const res = await fetch(`${GATEWAY_URL}/places/v1/places:searchText`, {
+      method: "POST",
+      headers: {
+        ...authHeaders(),
+        "Content-Type": "application/json",
+        "X-Goog-FieldMask": `${FIELD_MASK},nextPageToken`,
+      },
+      body: JSON.stringify({
+        textQuery,
+        languageCode: "pt-BR",
+        pageSize: 20,
+        ...(pageToken ? { pageToken } : {}),
+        locationBias: {
+          circle: { center: { latitude, longitude }, radius },
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`Places searchText failed [${res.status}]: ${text}`);
+      handleForbidden(res.status, text);
+      break;
+    }
+
+    const json = (await res.json()) as {
+      places?: PlacesPlace[];
+      nextPageToken?: string;
+    };
+    collected.push(...(json.places ?? []));
+    if (!json.nextPageToken) break;
+    pageToken = json.nextPageToken;
+  }
+
+  return collected;
+}
+
 export async function searchHospitals(
   latitude: number,
   longitude: number,
   radius: number,
 ): Promise<Hospital[]> {
-  const res = await fetch(`${GATEWAY_URL}/places/v1/places:searchNearby`, {
-    method: "POST",
-    headers: {
-      ...authHeaders(),
-      "Content-Type": "application/json",
-      "X-Goog-FieldMask": [
-        "places.id",
-        "places.displayName",
-        "places.formattedAddress",
-        "places.location",
-        "places.rating",
-        "places.userRatingCount",
-        "places.nationalPhoneNumber",
-        "places.websiteUri",
-        "places.googleMapsUri",
-        "places.currentOpeningHours.openNow",
-        "places.photos",
-      ].join(","),
-    },
-    body: JSON.stringify({
-      includedTypes: ["hospital"],
-      maxResultCount: 15,
-      rankPreference: "DISTANCE",
-      languageCode: "pt-BR",
-      locationRestriction: {
-        circle: { center: { latitude, longitude }, radius },
-      },
-    }),
-  });
+  const passes = await Promise.all([
+    nearbyPass(latitude, longitude, radius, ["hospital"]),
+    nearbyPass(latitude, longitude, radius, [
+      "medical_lab",
+      "doctor",
+      "dentist",
+    ]).catch(() => [] as PlacesPlace[]),
+    ...TEXT_QUERIES.map((q) =>
+      textPass(q, latitude, longitude, radius).catch(() => [] as PlacesPlace[]),
+    ),
+  ]);
 
-  if (!res.ok) {
-    const body = await res.text();
-    console.error(`Places searchNearby failed [${res.status}]: ${body}`);
-    handleForbidden(res.status, body);
-    throw new Error(`Falha ao buscar hospitais (${res.status}).`);
+  const byId = new Map<string, PlacesPlace>();
+  for (const place of passes.flat()) {
+    if (place.id && !byId.has(place.id)) byId.set(place.id, place);
   }
 
-  const json = (await res.json()) as { places?: PlacesPlace[] };
-  const places = json.places ?? [];
+  const places = [...byId.values()].filter((p) => {
+    const loc = p.location;
+    if (!loc) return false;
+    return (
+      haversine(latitude, longitude, loc.latitude, loc.longitude) <=
+      radius / 1000 + 0.5
+    );
+  });
 
   const hospitals = await Promise.all(
     places.map(async (p): Promise<Hospital | null> => {
