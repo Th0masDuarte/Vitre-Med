@@ -196,6 +196,17 @@ async function textPass(
   return collected;
 }
 
+const ALLOWED_NAME_WORDS = ["clinica", "hospital", "maternidade", "upa"];
+
+function hasAllowedName(name: string | undefined): boolean {
+  if (!name) return false;
+  const normalized = name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  return ALLOWED_NAME_WORDS.some((w) => normalized.includes(w));
+}
+
 export async function searchHospitals(
   latitude: number,
   longitude: number,
