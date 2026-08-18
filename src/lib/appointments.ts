@@ -3,14 +3,14 @@ import { useCallback, useEffect, useState } from "react";
 export interface Appointment {
   id: string;
   hospitalName: string;
-  address?: string;
-  phone?: string;
-  mapsUrl?: string;
+  address?: string | undefined;
+  phone?: string | undefined;
+  mapsUrl?: string | undefined;
   patient: string;
   specialty: string;
   date: string; // yyyy-mm-dd
   time: string; // hh:mm
-  notes?: string;
+  notes?: string | undefined;
   createdAt: string;
 }
 
