@@ -13,7 +13,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { AppNav } from "@/components/AppNav";
 import {
+
   addAppointment,
   formatDateTime,
   isPast,
