@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { CalendarCheck, Hospital as HospitalIcon, Search } from "lucide-react";
+import { CalendarCheck, Search } from "lucide-react";
 
 import { ThemeToggle } from "@/lib/theme";
+import logoAsset from "@/assets/vitre-med-logo.png.asset.json";
 
 const link =
   "inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";
@@ -12,10 +13,12 @@ export function AppNav() {
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
       <nav className="mx-auto flex w-full max-w-5xl items-center gap-2 px-4 py-3">
         <Link to="/" className="mr-2 flex items-center gap-2 font-semibold text-foreground">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground">
-            <HospitalIcon className="h-4 w-4" />
-          </span>
-          <span className="hidden sm:inline">SaúdePerto</span>
+          <img
+            src={logoAsset.url}
+            alt="Vitre-Med"
+            className="h-8 w-8 rounded-lg object-contain"
+          />
+          <span className="hidden sm:inline">Vitre-Med</span>
         </Link>
         <Link to="/" className={link} activeOptions={{ exact: true }} activeProps={{ className: `${link} ${active}` }}>
           Início
