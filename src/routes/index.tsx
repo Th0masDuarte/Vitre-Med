@@ -14,13 +14,13 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "SaúdePerto | Hospitais, clínicas e UPAs perto de você" },
+      { title: "Vitre-Med | Hospitais, clínicas e UPAs perto de você" },
       {
         name: "description",
         content:
           "Encontre hospitais, clínicas, maternidades e UPAs próximas usando sua localização, veja rota, telefone e agende consultas.",
       },
-      { property: "og:title", content: "SaúdePerto | Hospitais e UPAs perto de você" },
+      { property: "og:title", content: "Vitre-Med | Hospitais e UPAs perto de você" },
       {
         property: "og:description",
         content:

@@ -29,13 +29,13 @@ export const Route = createFileRoute("/agendamentos")({
   component: AppointmentsPage,
   head: () => ({
     meta: [
-      { title: "Meus agendamentos | Hospitais Perto de Mim" },
+      { title: "Meus agendamentos | Vitre-Med" },
       {
         name: "description",
         content:
           "Revise, adicione e exclua os agendamentos de consultas feitos nos hospitais encontrados.",
       },
-      { property: "og:title", content: "Meus agendamentos | Hospitais Perto de Mim" },
+      { property: "og:title", content: "Meus agendamentos | Vitre-Med" },
       {
         property: "og:description",
         content:
