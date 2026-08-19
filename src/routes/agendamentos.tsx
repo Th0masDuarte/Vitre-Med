@@ -217,8 +217,10 @@ function AppointmentsPage() {
           </ul>
         )}
       </div>
-    </main>
+      </main>
+    </div>
   );
+
 }
 
 function AppointmentForm({
