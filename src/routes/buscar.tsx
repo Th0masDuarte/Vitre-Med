@@ -13,13 +13,13 @@ export const Route = createFileRoute("/buscar")({
   component: BuscarPage,
   head: () => ({
     meta: [
-      { title: "Buscar hospitais com filtros | SaúdePerto" },
+      { title: "Buscar hospitais com filtros | Vitre-Med" },
       {
         name: "description",
         content:
           "Busca avançada de hospitais, clínicas, maternidades e UPAs: filtre por tipo, raio, avaliação, horário de funcionamento e ordene por distância.",
       },
-      { property: "og:title", content: "Buscar hospitais com filtros | SaúdePerto" },
+      { property: "og:title", content: "Buscar hospitais com filtros | Vitre-Med" },
       {
         property: "og:description",
         content:
