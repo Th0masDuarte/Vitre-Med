@@ -354,3 +354,22 @@ export async function geocodeAddress(address: string): Promise<GeocodedPlace> {
     "Endereço não encontrado. Tente incluir a cidade e o estado, por exemplo: \"Centro, Campinas SP\".",
   );
 }
+
+export async function reverseGeocode(
+  latitude: number,
+  longitude: number,
+): Promise<string | null> {
+  const res = await fetch(
+    `${GATEWAY_URL}/maps/api/geocode/json?language=pt-BR&latlng=${latitude},${longitude}`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`Reverse geocode failed [${res.status}]: ${body}`);
+    return null;
+  }
+  const json = (await res.json()) as {
+    results?: Array<{ formatted_address?: string }>;
+  };
+  return json.results?.[0]?.formatted_address ?? null;
+}
