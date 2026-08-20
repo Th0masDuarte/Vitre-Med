@@ -35,6 +35,14 @@ const schema = z.object({
   password: z.string().min(6, "A senha precisa ter ao menos 6 caracteres").max(72),
 });
 
+const signupSchema = schema.extend({
+  nome: z.string().trim().min(3, "Informe seu nome completo").max(120),
+  telefone: z
+    .string()
+    .refine((v) => v.replace(/\D/g, "").length >= 10, "Informe um telefone com DDD"),
+  cep: z.string().refine((v) => v.replace(/\D/g, "").length === 8, "Informe um CEP válido"),
+});
+
 const field =
   "w-full rounded-lg border border-input bg-background py-2.5 pl-10 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring";
 
@@ -44,12 +52,46 @@ function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [nome, setNome] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [cep, setCep] = useState("");
+  const [cepInfo, setCepInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
 
   useEffect(() => {
     if (!loading && session) void navigate({ to: "/", replace: true });
   }, [loading, session, navigate]);
+
+  async function lookupCep(value: string) {
+    const digits = value.replace(/\D/g, "");
+    if (digits.length !== 8) {
+      setCepInfo(null);
+      return;
+    }
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = (await res.json()) as {
+        erro?: boolean;
+        logradouro?: string;
+        bairro?: string;
+        localidade?: string;
+        uf?: string;
+      };
+      if (data.erro) {
+        setCepInfo(null);
+        return;
+      }
+      setCepInfo(
+        [data.logradouro, data.bairro, data.localidade && `${data.localidade} - ${data.uf}`]
+          .filter(Boolean)
+          .join(", "),
+      );
+    } catch {
+      setCepInfo(null);
+    }
+  }
+
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
