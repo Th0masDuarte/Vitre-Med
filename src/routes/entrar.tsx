@@ -247,6 +247,78 @@ function LoginPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {mode === "signup" ? (
+                  <>
+                    <div>
+                      <label htmlFor="nome" className="mb-1.5 block text-sm text-foreground">
+                        Nome completo
+                      </label>
+                      <div className="relative">
+                        <UserRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <input
+                          id="nome"
+                          autoComplete="name"
+                          value={nome}
+                          onChange={(e) => setNome(e.target.value)}
+                          placeholder="Maria da Silva"
+                          className={field}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label
+                          htmlFor="telefone"
+                          className="mb-1.5 block text-sm text-foreground"
+                        >
+                          Telefone
+                        </label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <input
+                            id="telefone"
+                            inputMode="tel"
+                            autoComplete="tel"
+                            value={telefone}
+                            onChange={(e) => setTelefone(formatPhone(e.target.value))}
+                            placeholder="(11) 98888-7777"
+                            className={field}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="cep" className="mb-1.5 block text-sm text-foreground">
+                          CEP
+                        </label>
+                        <div className="relative">
+                          <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <input
+                            id="cep"
+                            inputMode="numeric"
+                            autoComplete="postal-code"
+                            value={cep}
+                            onChange={(e) => {
+                              const next = formatCep(e.target.value);
+                              setCep(next);
+                              void lookupCep(next);
+                            }}
+                            placeholder="01310-100"
+                            className={field}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {cepInfo ? (
+                      <p className="rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
+                        {cepInfo} · será seu <strong>endereço padrão</strong> na busca avançada.
+                      </p>
+                    ) : null}
+                  </>
+                ) : null}
+
                 <div>
                   <label htmlFor="email" className="mb-1.5 block text-sm text-foreground">
                     E-mail
