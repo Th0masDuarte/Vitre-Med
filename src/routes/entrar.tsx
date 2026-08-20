@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2, Lock, Mail } from "lucide-react";
+import { ArrowLeft, Loader2, Lock, Mail, MapPin, Phone, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
