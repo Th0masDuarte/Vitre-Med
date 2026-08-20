@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { AlertCircle, Crosshair, Search, SlidersHorizontal } from "lucide-react";
+import { AlertCircle, Crosshair, Home, Search, SlidersHorizontal } from "lucide-react";
+import { toast } from "sonner";
 
 import { AppNav } from "@/components/AppNav";
 import { HospitalCard, outlineButton } from "@/components/HospitalCard";
@@ -8,6 +9,8 @@ import { ScheduleDialog, field } from "@/components/ScheduleDialog";
 import type { Hospital } from "@/lib/hospitals.server";
 import { categoryOf } from "@/lib/hospital-utils";
 import { useHospitalSearch } from "@/lib/use-hospital-search";
+import { formatCep, useProfile } from "@/lib/use-profile";
+import { useSession } from "@/lib/use-session";
 
 export const Route = createFileRoute("/buscar")({
   component: BuscarPage,
@@ -129,6 +132,75 @@ function BuscarPage() {
               {locating ? "Localizando..." : "Perto de mim"}
             </button>
           </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {user ? (
+              profile?.cep ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAddress(profile.cep);
+                    void searchAddress(radius, profile.cep);
+                  }}
+                  disabled={loading}
+                  className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/15 disabled:opacity-60"
+                >
+                  <Home className="h-4 w-4" />
+                  Endereço padrão ({profile.cep})
+                </button>
+              ) : cepOpen ? (
+                <form
+                  className="flex flex-wrap items-center gap-2"
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (newCep.replace(/\D/g, "").length !== 8) {
+                      toast.error("Informe um CEP válido.");
+                      return;
+                    }
+                    try {
+                      await save({ cep: newCep });
+                      setCepOpen(false);
+                      setAddress(newCep);
+                      void searchAddress(radius, newCep);
+                      toast.success("Endereço padrão salvo!");
+                    } catch {
+                      toast.error("Não foi possível salvar seu CEP.");
+                    }
+                  }}
+                >
+                  <input
+                    value={newCep}
+                    onChange={(e) => setNewCep(formatCep(e.target.value))}
+                    placeholder="Seu CEP"
+                    inputMode="numeric"
+                    className={`${field} max-w-[10rem]`}
+                  />
+                  <button type="submit" className={outlineButton}>
+                    Salvar
+                  </button>
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setCepOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full border border-border px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <Home className="h-4 w-4" />
+                  Definir endereço padrão
+                </button>
+              )
+            ) : (
+              <Link
+                to="/entrar"
+                className="inline-flex items-center gap-2 rounded-full border border-border px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <Home className="h-4 w-4" />
+                Entre para usar seu endereço padrão
+              </Link>
+            )}
+          </div>
+
+
 
           <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
             <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">

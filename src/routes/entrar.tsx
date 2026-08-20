@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2, Lock, Mail } from "lucide-react";
+import { ArrowLeft, Loader2, Lock, Mail, MapPin, Phone, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -8,6 +8,7 @@ import logoAsset from "@/assets/vitre-med-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useSession } from "@/lib/use-session";
+import { formatCep, formatPhone } from "@/lib/use-profile";
 
 export const Route = createFileRoute("/entrar")({
   component: LoginPage,
@@ -35,6 +36,14 @@ const schema = z.object({
   password: z.string().min(6, "A senha precisa ter ao menos 6 caracteres").max(72),
 });
 
+const signupSchema = schema.extend({
+  nome: z.string().trim().min(3, "Informe seu nome completo").max(120),
+  telefone: z
+    .string()
+    .refine((v) => v.replace(/\D/g, "").length >= 10, "Informe um telefone com DDD"),
+  cep: z.string().refine((v) => v.replace(/\D/g, "").length === 8, "Informe um CEP válido"),
+});
+
 const field =
   "w-full rounded-lg border border-input bg-background py-2.5 pl-10 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring";
 
@@ -44,6 +53,10 @@ function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [nome, setNome] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [cep, setCep] = useState("");
+  const [cepInfo, setCepInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -51,9 +64,42 @@ function LoginPage() {
     if (!loading && session) void navigate({ to: "/", replace: true });
   }, [loading, session, navigate]);
 
+  async function lookupCep(value: string) {
+    const digits = value.replace(/\D/g, "");
+    if (digits.length !== 8) {
+      setCepInfo(null);
+      return;
+    }
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = (await res.json()) as {
+        erro?: boolean;
+        logradouro?: string;
+        bairro?: string;
+        localidade?: string;
+        uf?: string;
+      };
+      if (data.erro) {
+        setCepInfo(null);
+        return;
+      }
+      setCepInfo(
+        [data.logradouro, data.bairro, data.localidade && `${data.localidade} - ${data.uf}`]
+          .filter(Boolean)
+          .join(", "),
+      );
+    } catch {
+      setCepInfo(null);
+    }
+  }
+
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    const parsed = schema.safeParse({ email, password });
+    const parsed =
+      mode === "signup"
+        ? signupSchema.safeParse({ email, password, nome, telefone, cep })
+        : schema.safeParse({ email, password });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Dados inválidos");
       return;
@@ -65,7 +111,14 @@ function LoginPage() {
         const { data, error } = await supabase.auth.signUp({
           email: parsed.data.email,
           password: parsed.data.password,
-          options: { emailRedirectTo: window.location.origin },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: {
+              nome: nome.trim(),
+              telefone: formatPhone(telefone),
+              cep: formatCep(cep),
+            },
+          },
         });
         if (error) throw error;
         if (!data.session) {
@@ -75,6 +128,7 @@ function LoginPage() {
         }
         toast.success("Conta criada!");
       } else {
+
         const { error } = await supabase.auth.signInWithPassword({
           email: parsed.data.email,
           password: parsed.data.password,
@@ -193,6 +247,78 @@ function LoginPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {mode === "signup" ? (
+                  <>
+                    <div>
+                      <label htmlFor="nome" className="mb-1.5 block text-sm text-foreground">
+                        Nome completo
+                      </label>
+                      <div className="relative">
+                        <UserRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <input
+                          id="nome"
+                          autoComplete="name"
+                          value={nome}
+                          onChange={(e) => setNome(e.target.value)}
+                          placeholder="Maria da Silva"
+                          className={field}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label
+                          htmlFor="telefone"
+                          className="mb-1.5 block text-sm text-foreground"
+                        >
+                          Telefone
+                        </label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <input
+                            id="telefone"
+                            inputMode="tel"
+                            autoComplete="tel"
+                            value={telefone}
+                            onChange={(e) => setTelefone(formatPhone(e.target.value))}
+                            placeholder="(11) 98888-7777"
+                            className={field}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="cep" className="mb-1.5 block text-sm text-foreground">
+                          CEP
+                        </label>
+                        <div className="relative">
+                          <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <input
+                            id="cep"
+                            inputMode="numeric"
+                            autoComplete="postal-code"
+                            value={cep}
+                            onChange={(e) => {
+                              const next = formatCep(e.target.value);
+                              setCep(next);
+                              void lookupCep(next);
+                            }}
+                            placeholder="01310-100"
+                            className={field}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {cepInfo ? (
+                      <p className="rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
+                        {cepInfo} · será seu <strong>endereço padrão</strong> na busca avançada.
+                      </p>
+                    ) : null}
+                  </>
+                ) : null}
+
                 <div>
                   <label htmlFor="email" className="mb-1.5 block text-sm text-foreground">
                     E-mail
