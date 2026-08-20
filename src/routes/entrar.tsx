@@ -95,7 +95,10 @@ function LoginPage() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    const parsed = schema.safeParse({ email, password });
+    const parsed =
+      mode === "signup"
+        ? signupSchema.safeParse({ email, password, nome, telefone, cep })
+        : schema.safeParse({ email, password });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Dados inválidos");
       return;
@@ -107,7 +110,14 @@ function LoginPage() {
         const { data, error } = await supabase.auth.signUp({
           email: parsed.data.email,
           password: parsed.data.password,
-          options: { emailRedirectTo: window.location.origin },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: {
+              nome: nome.trim(),
+              telefone: formatPhone(telefone),
+              cep: formatCep(cep),
+            },
+          },
         });
         if (error) throw error;
         if (!data.session) {
@@ -117,6 +127,7 @@ function LoginPage() {
         }
         toast.success("Conta criada!");
       } else {
+
         const { error } = await supabase.auth.signInWithPassword({
           email: parsed.data.email,
           password: parsed.data.password,
