@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { AlertCircle, Crosshair, Search, SlidersHorizontal } from "lucide-react";
+import { AlertCircle, Crosshair, Home, Search, SlidersHorizontal } from "lucide-react";
+import { toast } from "sonner";
 
 import { AppNav } from "@/components/AppNav";
 import { HospitalCard, outlineButton } from "@/components/HospitalCard";
@@ -8,6 +9,8 @@ import { ScheduleDialog, field } from "@/components/ScheduleDialog";
 import type { Hospital } from "@/lib/hospitals.server";
 import { categoryOf } from "@/lib/hospital-utils";
 import { useHospitalSearch } from "@/lib/use-hospital-search";
+import { formatCep, useProfile } from "@/lib/use-profile";
+import { useSession } from "@/lib/use-session";
 
 export const Route = createFileRoute("/buscar")({
   component: BuscarPage,
