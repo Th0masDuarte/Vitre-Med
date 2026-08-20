@@ -8,6 +8,7 @@ import logoAsset from "@/assets/vitre-med-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useSession } from "@/lib/use-session";
+import { formatCep, formatPhone } from "@/lib/use-profile";
 
 export const Route = createFileRoute("/entrar")({
   component: LoginPage,
