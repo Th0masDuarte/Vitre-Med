@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/lib/theme";
 import logoAsset from "@/assets/vitre-med-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/use-session";
+import { useProfile } from "@/lib/use-profile";
 
 const link =
   "inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";
@@ -15,6 +16,7 @@ export function AppNav() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading } = useSession();
+  const { profile } = useProfile();
 
   async function handleSignOut() {
     await queryClient.cancelQueries();
@@ -56,7 +58,7 @@ export function AppNav() {
             <>
               <span className="hidden max-w-[10rem] items-center gap-1.5 truncate text-sm text-muted-foreground sm:inline-flex">
                 <User className="h-4 w-4 shrink-0" />
-                {user.email}
+                {profile?.nome || user.email}
               </span>
               <button type="button" onClick={handleSignOut} className={link} title="Sair">
                 <LogOut className="h-4 w-4" />
