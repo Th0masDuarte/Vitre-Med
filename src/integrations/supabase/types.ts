@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          address: string | null
+          created_at: string
+          hospital_name: string
+          id: string
+          maps_url: string | null
+          notes: string
+          patient: string
+          phone: string | null
+          reminder_email_sent_at: string | null
+          reminder_sms_sent_at: string | null
+          scheduled_at: string
+          specialty: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          hospital_name: string
+          id?: string
+          maps_url?: string | null
+          notes?: string
+          patient?: string
+          phone?: string | null
+          reminder_email_sent_at?: string | null
+          reminder_sms_sent_at?: string | null
+          scheduled_at: string
+          specialty?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          hospital_name?: string
+          id?: string
+          maps_url?: string | null
+          notes?: string
+          patient?: string
+          phone?: string | null
+          reminder_email_sent_at?: string | null
+          reminder_sms_sent_at?: string | null
+          scheduled_at?: string
+          specialty?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           cep: string
