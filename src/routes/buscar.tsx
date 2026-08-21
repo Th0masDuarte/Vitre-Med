@@ -59,6 +59,10 @@ function BuscarPage() {
   const [cats, setCats] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortKey>("distance");
   const [scheduling, setScheduling] = useState<Hospital | null>(null);
+  const { user } = useSession();
+  const { profile, save } = useProfile();
+  const [cepOpen, setCepOpen] = useState(false);
+  const [newCep, setNewCep] = useState("");
 
   const toggleCat = (cat: string) =>
     setCats((prev) => (prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]));
