@@ -92,7 +92,10 @@ function AppointmentsPage() {
               Meus agendamentos
             </h1>
             <p className="text-sm text-muted-foreground">
-              {appointments.length} agendamento(s) salvos neste dispositivo
+              {appointments.length} agendamento(s){" "}
+              {session
+                ? "salvos na sua conta · lembrete 1 dia antes por e-mail"
+                : "salvos neste dispositivo"}
             </p>
           </div>
           <button
