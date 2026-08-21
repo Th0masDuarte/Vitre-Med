@@ -56,7 +56,7 @@ export function AppNav() {
             <>
               <span className="hidden max-w-[10rem] items-center gap-1.5 truncate text-sm text-muted-foreground sm:inline-flex">
                 <User className="h-4 w-4 shrink-0" />
-                {user.email}
+                {profile?.nome || user.email}
               </span>
               <button type="button" onClick={handleSignOut} className={link} title="Sair">
                 <LogOut className="h-4 w-4" />
