@@ -110,6 +110,15 @@ function AppointmentsPage() {
           </button>
         </header>
 
+        {!session ? (
+          <div className="mb-6 rounded-2xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
+            <Link to="/entrar" className="font-medium text-primary hover:underline">
+              Entre na sua conta
+            </Link>{" "}
+            para salvar os agendamentos na nuvem e receber lembretes 1 dia antes.
+          </div>
+        ) : null}
+
         {(showForm || editing) && (
           <AppointmentForm
             initial={editing}
