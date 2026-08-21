@@ -14,11 +14,12 @@ import {
 import { toast } from "sonner";
 
 import { AppNav } from "@/components/AppNav";
+import { useSession } from "@/lib/use-session";
 import {
-
   addAppointment,
   formatDateTime,
   isPast,
+  isSoon,
   removeAppointment,
   updateAppointment,
   useAppointments,
@@ -61,7 +62,8 @@ const chip = (active: boolean) =>
 type Filter = "upcoming" | "past" | "all";
 
 function AppointmentsPage() {
-  const appointments = useAppointments();
+  const { items: appointments, refresh } = useAppointments();
+  const { session } = useSession();
   const [filter, setFilter] = useState<Filter>("upcoming");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Appointment | null>(null);
@@ -90,7 +92,10 @@ function AppointmentsPage() {
               Meus agendamentos
             </h1>
             <p className="text-sm text-muted-foreground">
-              {appointments.length} agendamento(s) salvos neste dispositivo
+              {appointments.length} agendamento(s){" "}
+              {session
+                ? "salvos na sua conta · lembrete 1 dia antes por e-mail"
+                : "salvos neste dispositivo"}
             </p>
           </div>
           <button
@@ -104,6 +109,15 @@ function AppointmentsPage() {
             Novo
           </button>
         </header>
+
+        {!session ? (
+          <div className="mb-6 rounded-2xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
+            <Link to="/entrar" className="font-medium text-primary hover:underline">
+              Entre na sua conta
+            </Link>{" "}
+            para salvar os agendamentos na nuvem e receber lembretes 1 dia antes.
+          </div>
+        ) : null}
 
         {(showForm || editing) && (
           <AppointmentForm
@@ -157,10 +171,12 @@ function AppointmentsPage() {
                     className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
                       isPast(a)
                         ? "bg-muted text-muted-foreground"
-                        : "bg-emerald-500/10 text-emerald-600"
+                        : isSoon(a)
+                          ? "bg-amber-500/15 text-amber-600"
+                          : "bg-emerald-500/10 text-emerald-600"
                     }`}
                   >
-                    {isPast(a) ? "Realizado" : "Próximo"}
+                    {isPast(a) ? "Realizado" : isSoon(a) ? "É amanhã" : "Próximo"}
                   </span>
                 </div>
 

@@ -36,7 +36,7 @@ function Index() {
   const { hospitals, origin, loading, locating, error, searchNearMe } = useHospitalSearch();
   const [scheduling, setScheduling] = useState<Hospital | null>(null);
   const [hasCached, setHasCached] = useState(false);
-  const appointments = useAppointments();
+  const { items: appointments } = useAppointments();
 
   useEffect(() => {
     setHasCached(readCachedPosition() !== null);
