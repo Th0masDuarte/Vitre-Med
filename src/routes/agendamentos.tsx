@@ -14,11 +14,12 @@ import {
 import { toast } from "sonner";
 
 import { AppNav } from "@/components/AppNav";
+import { useSession } from "@/lib/use-session";
 import {
-
   addAppointment,
   formatDateTime,
   isPast,
+  isSoon,
   removeAppointment,
   updateAppointment,
   useAppointments,
