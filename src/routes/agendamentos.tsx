@@ -171,10 +171,12 @@ function AppointmentsPage() {
                     className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
                       isPast(a)
                         ? "bg-muted text-muted-foreground"
-                        : "bg-emerald-500/10 text-emerald-600"
+                        : isSoon(a)
+                          ? "bg-amber-500/15 text-amber-600"
+                          : "bg-emerald-500/10 text-emerald-600"
                     }`}
                   >
-                    {isPast(a) ? "Realizado" : "Próximo"}
+                    {isPast(a) ? "Realizado" : isSoon(a) ? "É amanhã" : "Próximo"}
                   </span>
                 </div>
 
