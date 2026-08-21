@@ -61,7 +61,8 @@ const chip = (active: boolean) =>
 type Filter = "upcoming" | "past" | "all";
 
 function AppointmentsPage() {
-  const appointments = useAppointments();
+  const { items: appointments, refresh } = useAppointments();
+  const { session } = useSession();
   const [filter, setFilter] = useState<Filter>("upcoming");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Appointment | null>(null);
