@@ -129,6 +129,7 @@ function AppointmentsPage() {
             onDone={() => {
               setShowForm(false);
               setEditing(null);
+              refresh();
             }}
           />
         )}
