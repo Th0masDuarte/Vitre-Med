@@ -214,14 +214,19 @@ function AppointmentsPage() {
                     </a>
                   )}
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       if (
-                        window.confirm(
+                        !window.confirm(
                           `Excluir o agendamento em ${a.hospitalName} (${formatDateTime(a)})?`,
                         )
-                      ) {
-                        removeAppointment(a.id);
+                      )
+                        return;
+                      try {
+                        await removeAppointment(a.id);
+                        refresh();
                         toast.success("Agendamento excluído.");
+                      } catch {
+                        toast.error("Não foi possível excluir.");
                       }
                     }}
                     className="inline-flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/20"
