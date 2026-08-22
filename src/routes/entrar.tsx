@@ -179,6 +179,54 @@ function LoginPage() {
     else toast.success("Enviamos um link de redefinição para seu e-mail.");
   }
 
+  /** Envia um código numérico de 6 dígitos para o e-mail. */
+  async function handleSendCode() {
+    const parsed = schema.shape.email.safeParse(email);
+    if (!parsed.success) {
+      toast.error("Informe um e-mail válido para receber o código.");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: parsed.data,
+      options: { shouldCreateUser: false },
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(
+        error.message.toLowerCase().includes("signups not allowed")
+          ? "Não encontramos uma conta com esse e-mail. Crie sua conta primeiro."
+          : error.message,
+      );
+      return;
+    }
+    setCodeSent(true);
+    setCode("");
+    toast.success("Código enviado! Confira seu e-mail.");
+  }
+
+  /** Valida o código digitado e entra. */
+  async function handleVerifyCode(event: React.FormEvent) {
+    event.preventDefault();
+    const digits = code.replace(/\D/g, "");
+    if (digits.length !== 6) {
+      toast.error("Digite os 6 números que enviamos por e-mail.");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: digits,
+      type: "email",
+    });
+    setBusy(false);
+    if (error) {
+      toast.error("Código inválido ou expirado. Peça um novo código.");
+      return;
+    }
+    toast.success("Bem-vindo de volta!");
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <div className="bg-gradient-primary px-4 pb-24 pt-8 text-primary-foreground">
