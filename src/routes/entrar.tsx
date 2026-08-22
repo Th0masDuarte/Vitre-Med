@@ -50,7 +50,9 @@ const field =
 function LoginPage() {
   const navigate = useNavigate();
   const { session, loading } = useSession();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "code">("signin");
+  const [code, setCode] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nome, setNome] = useState("");
