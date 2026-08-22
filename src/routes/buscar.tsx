@@ -287,20 +287,6 @@ function BuscarPage() {
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Ordenar
-            </span>
-            <button onClick={() => setSortBy("distance")} className={chip(sortBy === "distance")}>
-              Mais perto
-            </button>
-            <button onClick={() => setSortBy("rating")} className={chip(sortBy === "rating")}>
-              Melhor avaliado
-            </button>
-            <button onClick={() => setSortBy("name")} className={chip(sortBy === "name")}>
-              Nome (A-Z)
-            </button>
-          </div>
         </section>
 
         {error && (
