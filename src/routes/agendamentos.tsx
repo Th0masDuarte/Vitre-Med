@@ -266,7 +266,7 @@ function AppointmentForm({
 
   return (
     <form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
         const data = {
           hospitalName: hospitalName.trim(),
@@ -278,14 +278,18 @@ function AppointmentForm({
           phone: phone.trim(),
           notes: notes.trim(),
         };
-        if (initial) {
-          updateAppointment(initial.id, data);
-          toast.success("Agendamento atualizado.");
-        } else {
-          addAppointment(data);
-          toast.success("Agendamento criado.");
+        try {
+          if (initial) {
+            await updateAppointment(initial.id, data);
+            toast.success("Agendamento atualizado.");
+          } else {
+            await addAppointment(data);
+            toast.success("Agendamento criado.");
+          }
+          onDone();
+        } catch {
+          toast.error("Não foi possível salvar o agendamento.");
         }
-        onDone();
       }}
       className="mb-6 space-y-3 rounded-2xl border border-border bg-card p-6 shadow-sm"
     >
