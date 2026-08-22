@@ -50,7 +50,9 @@ const field =
 function LoginPage() {
   const navigate = useNavigate();
   const { session, loading } = useSession();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "code">("signin");
+  const [code, setCode] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nome, setNome] = useState("");
@@ -177,6 +179,54 @@ function LoginPage() {
     else toast.success("Enviamos um link de redefinição para seu e-mail.");
   }
 
+  /** Envia um código numérico de 6 dígitos para o e-mail. */
+  async function handleSendCode() {
+    const parsed = schema.shape.email.safeParse(email);
+    if (!parsed.success) {
+      toast.error("Informe um e-mail válido para receber o código.");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: parsed.data,
+      options: { shouldCreateUser: false },
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(
+        error.message.toLowerCase().includes("signups not allowed")
+          ? "Não encontramos uma conta com esse e-mail. Crie sua conta primeiro."
+          : error.message,
+      );
+      return;
+    }
+    setCodeSent(true);
+    setCode("");
+    toast.success("Código enviado! Confira seu e-mail.");
+  }
+
+  /** Valida o código digitado e entra. */
+  async function handleVerifyCode(event: React.FormEvent) {
+    event.preventDefault();
+    const digits = code.replace(/\D/g, "");
+    if (digits.length !== 6) {
+      toast.error("Digite os 6 números que enviamos por e-mail.");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: digits,
+      type: "email",
+    });
+    setBusy(false);
+    if (error) {
+      toast.error("Código inválido ou expirado. Peça um novo código.");
+      return;
+    }
+    toast.success("Bem-vindo de volta!");
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <div className="bg-gradient-primary px-4 pb-24 pt-8 text-primary-foreground">
@@ -246,6 +296,82 @@ function LoginPage() {
                 <span className="h-px flex-1 bg-border" />
               </div>
 
+              {mode === "code" ? (
+                <form onSubmit={handleVerifyCode} className="space-y-4">
+                  <div>
+                    <label htmlFor="email-code" className="mb-1.5 block text-sm text-foreground">
+                      E-mail
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        id="email-code"
+                        type="email"
+                        autoComplete="email"
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          setCodeSent(false);
+                        }}
+                        placeholder="voce@email.com"
+                        className={field}
+                      />
+                    </div>
+                  </div>
+
+                  {codeSent ? (
+                    <div>
+                      <label htmlFor="code" className="mb-1.5 block text-sm text-foreground">
+                        Código de 6 dígitos
+                      </label>
+                      <input
+                        id="code"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        maxLength={6}
+                        value={code}
+                        onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                        placeholder="000000"
+                        className="w-full rounded-lg border border-input bg-background py-2.5 text-center text-lg font-semibold tracking-[0.4em] text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                      />
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Enviamos os números para <strong>{email}</strong>.
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {codeSent ? (
+                    <>
+                      <button
+                        type="submit"
+                        disabled={busy}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+                      >
+                        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                        Entrar com o código
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSendCode}
+                        disabled={busy}
+                        className="w-full text-center text-sm text-muted-foreground hover:text-foreground"
+                      >
+                        Enviar novo código
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleSendCode}
+                      disabled={busy}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+                    >
+                      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                      Receber código por e-mail
+                    </button>
+                  )}
+                </form>
+              ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {mode === "signup" ? (
                   <>
@@ -364,16 +490,29 @@ function LoginPage() {
                   {mode === "signin" ? "Entrar" : "Criar conta"}
                 </button>
               </form>
+              )}
 
               <div className="mt-5 flex flex-col gap-2 text-center text-sm">
                 {mode === "signin" ? (
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Esqueci minha senha
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("code");
+                        setCodeSent(false);
+                      }}
+                      className="font-medium text-primary hover:underline"
+                    >
+                      Entrar com código por e-mail
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleReset}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Esqueci minha senha
+                    </button>
+                  </>
                 ) : null}
                 <button
                   type="button"
@@ -382,7 +521,9 @@ function LoginPage() {
                 >
                   {mode === "signin"
                     ? "Não tem conta? Criar agora"
-                    : "Já tenho conta. Entrar"}
+                    : mode === "code"
+                      ? "Entrar com senha"
+                      : "Já tenho conta. Entrar"}
                 </button>
               </div>
             </>

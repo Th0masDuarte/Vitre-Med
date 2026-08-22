@@ -29,21 +29,25 @@ export function ScheduleDialog({
     >
       <form
         onClick={(e) => e.stopPropagation()}
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          addAppointment({
-            hospitalName: hospital.name,
-            address: hospital.address,
-            phone: hospital.phone,
-            mapsUrl: hospital.mapsUrl,
-            patient: patient.trim(),
-            specialty: specialty.trim(),
-            date,
-            time,
-            notes: notes.trim(),
-          });
-          toast.success("Agendamento criado.");
-          onClose();
+          try {
+            await addAppointment({
+              hospitalName: hospital.name,
+              address: hospital.address,
+              phone: hospital.phone,
+              mapsUrl: hospital.mapsUrl,
+              patient: patient.trim(),
+              specialty: specialty.trim(),
+              date,
+              time,
+              notes: notes.trim(),
+            });
+            toast.success("Agendamento criado.");
+            onClose();
+          } catch {
+            toast.error("Não foi possível salvar o agendamento.");
+          }
         }}
         className="w-full max-w-md space-y-3 rounded-3xl border border-border bg-card p-6 shadow-elegant"
       >
