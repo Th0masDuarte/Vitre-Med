@@ -490,16 +490,29 @@ function LoginPage() {
                   {mode === "signin" ? "Entrar" : "Criar conta"}
                 </button>
               </form>
+              )}
 
               <div className="mt-5 flex flex-col gap-2 text-center text-sm">
                 {mode === "signin" ? (
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Esqueci minha senha
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("code");
+                        setCodeSent(false);
+                      }}
+                      className="font-medium text-primary hover:underline"
+                    >
+                      Entrar com código por e-mail
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleReset}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Esqueci minha senha
+                    </button>
+                  </>
                 ) : null}
                 <button
                   type="button"
@@ -508,7 +521,9 @@ function LoginPage() {
                 >
                   {mode === "signin"
                     ? "Não tem conta? Criar agora"
-                    : "Já tenho conta. Entrar"}
+                    : mode === "code"
+                      ? "Entrar com senha"
+                      : "Já tenho conta. Entrar"}
                 </button>
               </div>
             </>
