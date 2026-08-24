@@ -114,7 +114,7 @@ export function HospitalCard({
                 ? `${h.lat},${h.lon}`
                 : encodeURIComponent(`${h.name} ${h.address ?? ""}`.trim());
               const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}${
-                hasCoords && h.placeId ? `&destination_place_id=${h.placeId}` : ""
+                ""
               }`;
               const win = window.open(url, "_blank", "noopener,noreferrer");
               if (!win) window.location.href = url;
