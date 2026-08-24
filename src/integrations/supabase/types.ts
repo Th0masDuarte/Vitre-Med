@@ -65,6 +65,51 @@ export type Database = {
         }
         Relationships: []
       }
+      favorites: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          lat: number | null
+          lng: number | null
+          maps_url: string | null
+          name: string
+          phone: string | null
+          place_id: string
+          rating: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          maps_url?: string | null
+          name: string
+          phone?: string | null
+          place_id: string
+          rating?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          maps_url?: string | null
+          name?: string
+          phone?: string | null
+          place_id?: string
+          rating?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           cep: string
