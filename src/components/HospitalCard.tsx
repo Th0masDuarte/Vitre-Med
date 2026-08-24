@@ -26,6 +26,22 @@ export function HospitalCard({
   onSchedule: (hospital: Hospital) => void;
 }) {
   const upa = isUpa(h);
+  const { isFavorite, toggle, enabled: canFavorite } = useFavorites();
+  const favorited = isFavorite(h.id);
+
+  function handleFavorite() {
+    if (!canFavorite) {
+      toast.info("Entre na sua conta para salvar favoritos.");
+      return;
+    }
+    void toggle(h)
+      .then((added) =>
+        toast.success(added ? "Salvo nos favoritos." : "Removido dos favoritos."),
+      )
+      .catch((error: unknown) =>
+        toast.error(error instanceof Error ? error.message : "Não foi possível salvar."),
+      );
+  }
 
   return (
     <article className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-card transition-shadow hover:shadow-elegant">
