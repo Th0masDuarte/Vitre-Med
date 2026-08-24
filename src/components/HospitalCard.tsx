@@ -105,15 +105,26 @@ export function HospitalCard({
               Site
             </a>
           )}
-          <a
-            href={`https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lon}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={() => {
+              const hasCoords =
+                Number.isFinite(h.lat) && Number.isFinite(h.lon) && (h.lat !== 0 || h.lon !== 0);
+              const destination = hasCoords
+                ? `${h.lat},${h.lon}`
+                : encodeURIComponent(`${h.name} ${h.address ?? ""}`.trim());
+              const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}${
+                hasCoords && h.placeId ? `&destination_place_id=${h.placeId}` : ""
+              }`;
+              const win = window.open(url, "_blank", "noopener,noreferrer");
+              if (!win) window.location.href = url;
+            }}
             className={outlineButton}
           >
             <ExternalLink className="h-4 w-4" />
             Rota
-          </a>
+          </button>
+
           <button
             onClick={() => {
               void navigator.clipboard
