@@ -6,12 +6,14 @@ import {
   Star,
   CalendarPlus,
   Copy,
+  Heart,
   Hospital as HospitalIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import type { Hospital } from "@/lib/hospitals.server";
 import { categoryOf, formatDistance, isUpa } from "@/lib/hospital-utils";
+import { useFavorites } from "@/lib/use-favorites";
 
 export const outlineButton =
   "inline-flex items-center gap-2 rounded-full border border-border bg-background px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent";
