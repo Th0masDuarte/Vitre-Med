@@ -156,7 +156,7 @@ export async function updateAppointment(id: string, data: Partial<NewAppointment
   }
   const { error } = await supabase
     .from("appointments")
-    .update({ ...toRow(data), reminder_email_sent_at: null } as never)
+    .update({ ...toRow(data) } as never)
     .eq("id", id);
   if (error) throw error;
   notify();
