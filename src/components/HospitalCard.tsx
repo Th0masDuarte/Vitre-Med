@@ -155,6 +155,17 @@ export function HospitalCard({
             <Copy className="h-4 w-4" />
             Copiar endereço
           </button>
+
+          <button
+            type="button"
+            onClick={handleFavorite}
+            aria-pressed={favorited}
+            title={favorited ? "Remover dos favoritos" : "Salvar nos favoritos"}
+            className={`${outlineButton} ${favorited ? "border-primary/40 text-primary" : ""}`}
+          >
+            <Heart className={`h-4 w-4 ${favorited ? "fill-primary text-primary" : ""}`} />
+            {favorited ? "Favorito" : "Favoritar"}
+          </button>
         </div>
       </div>
     </article>
