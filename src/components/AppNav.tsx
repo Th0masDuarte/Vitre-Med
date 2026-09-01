@@ -56,10 +56,17 @@ export function AppNav() {
           <ThemeToggle />
           {loading ? null : user ? (
             <>
-              <span className="hidden max-w-[10rem] items-center gap-1.5 truncate text-sm text-muted-foreground sm:inline-flex">
+              <Link
+                to="/conta"
+                className={link}
+                activeProps={{ className: `${link} ${active}` }}
+                title="Minha conta e favoritos"
+              >
                 <User className="h-4 w-4 shrink-0" />
-                {profile?.nome || user.email}
-              </span>
+                <span className="hidden max-w-[10rem] truncate sm:inline">
+                  {profile?.nome || user.email}
+                </span>
+              </Link>
               <button type="button" onClick={handleSignOut} className={link} title="Sair">
                 <LogOut className="h-4 w-4" />
                 <span className="hidden sm:inline">Sair</span>
