@@ -14,7 +14,6 @@ import { Route as AgendamentosRouteImport } from './routes/agendamentos'
 import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as ContaRouteImport } from './routes/conta'
 import { Route as EntrarRouteImport } from './routes/entrar'
-import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -41,11 +40,6 @@ const EntrarRoute = EntrarRouteImport.update({
   path: '/entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
-  id: '/redefinir-senha',
-  path: '/redefinir-senha',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,7 +47,6 @@ export interface FileRoutesByFullPath {
   '/buscar': typeof BuscarRoute
   '/conta': typeof ContaRoute
   '/entrar': typeof EntrarRoute
-  '/redefinir-senha': typeof RedefinirSenhaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +54,6 @@ export interface FileRoutesByTo {
   '/buscar': typeof BuscarRoute
   '/conta': typeof ContaRoute
   '/entrar': typeof EntrarRoute
-  '/redefinir-senha': typeof RedefinirSenhaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,33 +62,13 @@ export interface FileRoutesById {
   '/buscar': typeof BuscarRoute
   '/conta': typeof ContaRoute
   '/entrar': typeof EntrarRoute
-  '/redefinir-senha': typeof RedefinirSenhaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/agendamentos'
-    | '/buscar'
-    | '/conta'
-    | '/entrar'
-    | '/redefinir-senha'
+  fullPaths: '/' | '/agendamentos' | '/buscar' | '/conta' | '/entrar'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/agendamentos'
-    | '/buscar'
-    | '/conta'
-    | '/entrar'
-    | '/redefinir-senha'
-  id:
-    | '__root__'
-    | '/'
-    | '/agendamentos'
-    | '/buscar'
-    | '/conta'
-    | '/entrar'
-    | '/redefinir-senha'
+  to: '/' | '/agendamentos' | '/buscar' | '/conta' | '/entrar'
+  id: '__root__' | '/' | '/agendamentos' | '/buscar' | '/conta' | '/entrar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -105,7 +77,6 @@ export interface RootRouteChildren {
   BuscarRoute: typeof BuscarRoute
   ContaRoute: typeof ContaRoute
   EntrarRoute: typeof EntrarRoute
-  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -145,13 +116,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/redefinir-senha': {
-      id: '/redefinir-senha'
-      path: '/redefinir-senha'
-      fullPath: '/redefinir-senha'
-      preLoaderRoute: typeof RedefinirSenhaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -161,7 +125,6 @@ const rootRouteChildren: RootRouteChildren = {
   BuscarRoute: BuscarRoute,
   ContaRoute: ContaRoute,
   EntrarRoute: EntrarRoute,
-  RedefinirSenhaRoute: RedefinirSenhaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

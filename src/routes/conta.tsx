@@ -4,7 +4,6 @@ import {
   ExternalLink,
   Heart,
   Loader2,
-  Lock,
   Mail,
   MapPin,
   Phone,
@@ -16,7 +15,6 @@ import { toast } from "sonner";
 
 import { AppNav } from "@/components/AppNav";
 import { outlineButton } from "@/components/HospitalCard";
-import { supabase } from "@/integrations/supabase/client";
 import { useFavorites } from "@/lib/use-favorites";
 import { formatCep, formatPhone, useProfile } from "@/lib/use-profile";
 import { useSession } from "@/lib/use-session";
@@ -29,12 +27,12 @@ export const Route = createFileRoute("/conta")({
       {
         name: "description",
         content:
-          "Atualize seus dados pessoais, altere sua senha e gerencie os hospitais e clínicas favoritos da sua conta Vitre-Med.",
+          "Atualize seus dados pessoais e gerencie os hospitais e clínicas favoritos da sua conta Vitre-Med.",
       },
       { property: "og:title", content: "Minha conta e favoritos | Vitre-Med" },
       {
         property: "og:description",
-        content: "Edite informações pessoais, senha e veja suas unidades de saúde favoritas.",
+        content: "Edite suas informações pessoais e veja suas unidades de saúde favoritas.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -47,7 +45,6 @@ const field =
 
 const tabs = [
   { key: "perfil", label: "Informações pessoais" },
-  { key: "senha", label: "Senha" },
   { key: "favoritos", label: "Favoritos" },
 ] as const;
 
@@ -99,7 +96,6 @@ function ContaPage() {
 
         <div className="mt-6">
           {tab === "perfil" && <PerfilTab email={user.email ?? ""} />}
-          {tab === "senha" && <SenhaTab />}
           {tab === "favoritos" && <FavoritosTab />}
         </div>
       </main>
@@ -211,78 +207,6 @@ function PerfilTab({ email }: { email: string }) {
       >
         {saving && <Loader2 className="h-4 w-4 animate-spin" />}
         Salvar alterações
-      </button>
-    </form>
-  );
-}
-
-function SenhaTab() {
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    if (password.length < 6) {
-      toast.error("A senha precisa ter ao menos 6 caracteres.");
-      return;
-    }
-    if (password !== confirm) {
-      toast.error("As senhas não coincidem.");
-      return;
-    }
-    setSaving(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    setSaving(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    setPassword("");
-    setConfirm("");
-    toast.success("Senha atualizada.");
-  }
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-4 rounded-3xl border border-border bg-card p-6 shadow-card"
-    >
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-card-foreground">Nova senha</label>
-        <div className="relative">
-          <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Mínimo de 6 caracteres"
-            className={field}
-          />
-        </div>
-      </div>
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-card-foreground">
-          Confirmar nova senha
-        </label>
-        <div className="relative">
-          <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            placeholder="Repita a senha"
-            className={field}
-          />
-        </div>
-      </div>
-      <button
-        type="submit"
-        disabled={saving}
-        className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
-      >
-        {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-        Alterar senha
       </button>
     </form>
   );
