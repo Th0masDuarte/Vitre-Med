@@ -373,3 +373,132 @@ export async function reverseGeocode(
   };
   return json.results?.[0]?.formatted_address ?? null;
 }
+
+export interface PlaceDetails {
+  id: string;
+  name: string;
+  address: string;
+  phone?: string | undefined;
+  internationalPhone?: string | undefined;
+  website?: string | undefined;
+  rating?: number | undefined;
+  userRatingCount?: number | undefined;
+  openNow?: boolean | undefined;
+  weekdayDescriptions: string[];
+  lat: number;
+  lon: number;
+  mapsUrl: string;
+  photoUrls: string[];
+  summary?: string | undefined;
+  types: string[];
+  businessStatus?: string | undefined;
+  accessibleEntrance?: boolean | undefined;
+  reviews: Array<{
+    author?: string | undefined;
+    rating?: number | undefined;
+    text?: string | undefined;
+    relative?: string | undefined;
+  }>;
+}
+
+const DETAILS_FIELD_MASK = [
+  "id",
+  "displayName",
+  "formattedAddress",
+  "location",
+  "rating",
+  "userRatingCount",
+  "nationalPhoneNumber",
+  "internationalPhoneNumber",
+  "websiteUri",
+  "googleMapsUri",
+  "regularOpeningHours",
+  "currentOpeningHours",
+  "photos",
+  "editorialSummary",
+  "types",
+  "businessStatus",
+  "accessibilityOptions",
+  "reviews",
+].join(",");
+
+export async function getPlaceDetails(placeId: string): Promise<PlaceDetails> {
+  const res = await fetch(
+    `${GATEWAY_URL}/places/v1/places/${encodeURIComponent(placeId)}?languageCode=pt-BR`,
+    { headers: { ...authHeaders(), "X-Goog-FieldMask": DETAILS_FIELD_MASK } },
+  );
+
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`Place details failed [${res.status}]: ${body}`);
+    handleForbidden(res.status, body);
+    throw new Error(`Não foi possível carregar os detalhes (${res.status}).`);
+  }
+
+  const p = (await res.json()) as {
+    id: string;
+    displayName?: { text?: string };
+    formattedAddress?: string;
+    location?: { latitude: number; longitude: number };
+    rating?: number;
+    userRatingCount?: number;
+    nationalPhoneNumber?: string;
+    internationalPhoneNumber?: string;
+    websiteUri?: string;
+    googleMapsUri?: string;
+    regularOpeningHours?: { weekdayDescriptions?: string[] };
+    currentOpeningHours?: { openNow?: boolean; weekdayDescriptions?: string[] };
+    photos?: Array<{ name: string }>;
+    editorialSummary?: { text?: string };
+    types?: string[];
+    businessStatus?: string;
+    accessibilityOptions?: { wheelchairAccessibleEntrance?: boolean };
+    reviews?: Array<{
+      authorAttribution?: { displayName?: string };
+      rating?: number;
+      text?: { text?: string };
+      relativePublishTimeDescription?: string;
+    }>;
+  };
+
+  const lat = p.location?.latitude ?? 0;
+  const lon = p.location?.longitude ?? 0;
+
+  const photoUrls = (
+    await Promise.all(
+      (p.photos ?? []).slice(0, 5).map((photo) => resolvePhoto(photo.name)),
+    )
+  ).filter((u): u is string => Boolean(u));
+
+  return {
+    id: p.id ?? placeId,
+    name: p.displayName?.text ?? "Estabelecimento",
+    address: p.formattedAddress ?? "Endereço não informado",
+    phone: p.nationalPhoneNumber,
+    internationalPhone: p.internationalPhoneNumber,
+    website: p.websiteUri,
+    rating: p.rating,
+    userRatingCount: p.userRatingCount,
+    openNow: p.currentOpeningHours?.openNow,
+    weekdayDescriptions:
+      p.currentOpeningHours?.weekdayDescriptions ??
+      p.regularOpeningHours?.weekdayDescriptions ??
+      [],
+    lat,
+    lon,
+    mapsUrl:
+      p.googleMapsUri ??
+      `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`,
+    photoUrls,
+    summary: p.editorialSummary?.text,
+    types: p.types ?? [],
+    businessStatus: p.businessStatus,
+    accessibleEntrance: p.accessibilityOptions?.wheelchairAccessibleEntrance,
+    reviews: (p.reviews ?? []).slice(0, 5).map((r) => ({
+      author: r.authorAttribution?.displayName,
+      rating: r.rating,
+      text: r.text?.text,
+      relative: r.relativePublishTimeDescription,
+    })),
+  };
+}

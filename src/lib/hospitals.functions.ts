@@ -1,7 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { geocodeAddress, reverseGeocode, searchHospitals } from "./hospitals.server";
+import {
+  geocodeAddress,
+  getPlaceDetails,
+  reverseGeocode,
+  searchHospitals,
+} from "./hospitals.server";
 
 export const findHospitals = createServerFn({ method: "POST" })
   .inputValidator((data) =>
@@ -48,3 +53,9 @@ export const describeLocation = createServerFn({ method: "POST" })
   .handler(async ({ data }) => ({
     label: await reverseGeocode(data.latitude, data.longitude),
   }));
+
+export const fetchPlaceDetails = createServerFn({ method: "POST" })
+  .inputValidator((data) =>
+    z.object({ placeId: z.string().trim().min(3).max(400) }).parse(data),
+  )
+  .handler(async ({ data }) => getPlaceDetails(data.placeId));
