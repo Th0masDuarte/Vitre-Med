@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { CalendarPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { addAppointment } from "@/lib/appointments";
+import { openGoogleCalendar } from "@/lib/google-calendar";
 import type { Hospital } from "@/lib/hospitals.server";
 import { outlineButton } from "@/components/HospitalCard";
 
@@ -21,6 +23,8 @@ export function ScheduleDialog({
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [notes, setNotes] = useState("");
+  const [saveToGoogle, setSaveToGoogle] = useState(true);
+  const navigate = useNavigate();
 
   return (
     <div
@@ -32,7 +36,7 @@ export function ScheduleDialog({
         onSubmit={async (e) => {
           e.preventDefault();
           try {
-            await addAppointment({
+            const data = {
               hospitalName: hospital.name,
               address: hospital.address,
               phone: hospital.phone,
@@ -42,9 +46,12 @@ export function ScheduleDialog({
               date,
               time,
               notes: notes.trim(),
-            });
+            };
+            await addAppointment(data);
             toast.success("Agendamento criado.");
+            if (saveToGoogle) openGoogleCalendar(data);
             onClose();
+            void navigate({ to: "/agendamentos" });
           } catch {
             toast.error("Não foi possível salvar o agendamento.");
           }
@@ -91,6 +98,22 @@ export function ScheduleDialog({
           rows={3}
           className={field}
         />
+
+        <label className="flex items-start gap-2.5 rounded-xl border border-border bg-muted/40 p-3 text-sm text-card-foreground">
+          <input
+            type="checkbox"
+            checked={saveToGoogle}
+            onChange={(e) => setSaveToGoogle(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-primary"
+          />
+          <span>
+            Salvar no Google Agenda?
+            <span className="block text-xs text-muted-foreground">
+              Abre o Google Agenda com os dados do agendamento já preenchidos para você confirmar.
+            </span>
+          </span>
+        </label>
+
 
         <div className="flex justify-end gap-2 pt-1">
           <button type="button" onClick={onClose} className={outlineButton}>
