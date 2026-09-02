@@ -23,6 +23,8 @@ export function ScheduleDialog({
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [notes, setNotes] = useState("");
+  const [saveToGoogle, setSaveToGoogle] = useState(true);
+  const navigate = useNavigate();
 
   return (
     <div
