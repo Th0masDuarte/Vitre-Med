@@ -156,18 +156,33 @@ function PerfilTab({ email }: { email: string }) {
 
       <div>
         <label className="mb-1.5 block text-sm font-medium text-card-foreground">
-          Nome completo
-        </label>
-        <div className="relative">
-          <UserRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            placeholder="Seu nome"
-            className={field}
-          />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-card-foreground">Nome</label>
+          <div className="relative">
+            <UserRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              placeholder="Maria"
+              className={field}
+            />
+          </div>
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-card-foreground">Sobrenome</label>
+          <div className="relative">
+            <UserRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={sobrenome}
+              onChange={(e) => setSobrenome(e.target.value)}
+              placeholder="Silva"
+              className={field}
+            />
+          </div>
         </div>
       </div>
+
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
