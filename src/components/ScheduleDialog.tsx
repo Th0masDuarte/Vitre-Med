@@ -99,6 +99,22 @@ export function ScheduleDialog({
           className={field}
         />
 
+        <label className="flex items-start gap-2.5 rounded-xl border border-border bg-muted/40 p-3 text-sm text-card-foreground">
+          <input
+            type="checkbox"
+            checked={saveToGoogle}
+            onChange={(e) => setSaveToGoogle(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-primary"
+          />
+          <span>
+            Salvar no Google Agenda?
+            <span className="block text-xs text-muted-foreground">
+              Abre o Google Agenda com os dados do agendamento já preenchidos para você confirmar.
+            </span>
+          </span>
+        </label>
+
+
         <div className="flex justify-end gap-2 pt-1">
           <button type="button" onClick={onClose} className={outlineButton}>
             Cancelar
