@@ -36,7 +36,7 @@ export function ScheduleDialog({
         onSubmit={async (e) => {
           e.preventDefault();
           try {
-            await addAppointment({
+            const data = {
               hospitalName: hospital.name,
               address: hospital.address,
               phone: hospital.phone,
@@ -46,9 +46,12 @@ export function ScheduleDialog({
               date,
               time,
               notes: notes.trim(),
-            });
+            };
+            await addAppointment(data);
             toast.success("Agendamento criado.");
+            if (saveToGoogle) openGoogleCalendar(data);
             onClose();
+            void navigate({ to: "/agendamentos" });
           } catch {
             toast.error("Não foi possível salvar o agendamento.");
           }
