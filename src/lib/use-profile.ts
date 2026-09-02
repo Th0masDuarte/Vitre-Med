@@ -6,6 +6,7 @@ import { useSession } from "./use-session";
 export type Profile = {
   id: string;
   nome: string;
+  sobrenome: string;
   telefone: string;
   cep: string;
 };
@@ -40,10 +41,10 @@ export function useProfile() {
     setLoading(true);
     const { data } = await supabase
       .from("profiles")
-      .select("id, nome, telefone, cep")
+      .select("id, nome, sobrenome, telefone, cep")
       .eq("id", user.id)
       .maybeSingle();
-    setProfile(data ?? { id: user.id, nome: "", telefone: "", cep: "" });
+    setProfile(data ?? { id: user.id, nome: "", sobrenome: "", telefone: "", cep: "" });
     setLoading(false);
   }, [user]);
 
@@ -58,6 +59,7 @@ export function useProfile() {
       const next = {
         id: user.id,
         nome: patch.nome ?? profile?.nome ?? "",
+        sobrenome: patch.sobrenome ?? profile?.sobrenome ?? "",
         telefone: patch.telefone ?? profile?.telefone ?? "",
         cep: patch.cep ?? profile?.cep ?? "",
       };
