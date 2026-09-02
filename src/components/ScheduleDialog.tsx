@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { CalendarPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { addAppointment } from "@/lib/appointments";
+import { openGoogleCalendar } from "@/lib/google-calendar";
 import type { Hospital } from "@/lib/hospitals.server";
 import { outlineButton } from "@/components/HospitalCard";
 
