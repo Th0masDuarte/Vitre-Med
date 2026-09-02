@@ -64,7 +64,7 @@ export function AppNav() {
               >
                 <User className="h-4 w-4 shrink-0" />
                 <span className="hidden max-w-[10rem] truncate sm:inline">
-                  {profile?.nome || user.email}
+                  {[profile?.nome, profile?.sobrenome].filter(Boolean).join(" ") || user.email}
                 </span>
               </Link>
               <button type="button" onClick={handleSignOut} className={link} title="Sair">
