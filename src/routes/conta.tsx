@@ -4,6 +4,7 @@ import {
   ExternalLink,
   Heart,
   Loader2,
+  Lock,
   Mail,
   MapPin,
   Phone,
@@ -15,6 +16,7 @@ import { toast } from "sonner";
 
 import { AppNav } from "@/components/AppNav";
 import { outlineButton } from "@/components/HospitalCard";
+import { supabase } from "@/integrations/supabase/client";
 import { useFavorites } from "@/lib/use-favorites";
 import { formatCep, formatPhone, useProfile } from "@/lib/use-profile";
 import { useSession } from "@/lib/use-session";
@@ -45,6 +47,7 @@ const field =
 
 const tabs = [
   { key: "perfil", label: "Informações pessoais" },
+  { key: "senha", label: "Senha" },
   { key: "favoritos", label: "Favoritos" },
 ] as const;
 
@@ -96,6 +99,7 @@ function ContaPage() {
 
         <div className="mt-6">
           {tab === "perfil" && <PerfilTab email={user.email ?? ""} />}
+          {tab === "senha" && <SenhaTab />}
           {tab === "favoritos" && <FavoritosTab />}
         </div>
       </main>
@@ -106,6 +110,7 @@ function ContaPage() {
 function PerfilTab({ email }: { email: string }) {
   const { profile, loading, save } = useProfile();
   const [nome, setNome] = useState("");
+  const [sobrenome, setSobrenome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [cep, setCep] = useState("");
   const [saving, setSaving] = useState(false);
@@ -113,19 +118,20 @@ function PerfilTab({ email }: { email: string }) {
   useEffect(() => {
     if (!profile) return;
     setNome(profile.nome);
+    setSobrenome(profile.sobrenome);
     setTelefone(formatPhone(profile.telefone));
     setCep(formatCep(profile.cep));
   }, [profile]);
 
   async function handleSave(event: React.FormEvent) {
     event.preventDefault();
-    if (nome.trim().length < 3) {
-      toast.error("Informe seu nome completo.");
+    if (nome.trim().length < 2 || sobrenome.trim().length < 2) {
+      toast.error("Informe nome e sobrenome.");
       return;
     }
     setSaving(true);
     try {
-      await save({ nome: nome.trim(), telefone, cep });
+      await save({ nome: nome.trim(), sobrenome: sobrenome.trim(), telefone, cep });
       toast.success("Informações atualizadas.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível salvar.");
@@ -154,20 +160,34 @@ function PerfilTab({ email }: { email: string }) {
         </p>
       </div>
 
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-card-foreground">
-          Nome completo
-        </label>
-        <div className="relative">
-          <UserRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            placeholder="Seu nome"
-            className={field}
-          />
+      <div className="grid gap-4 sm:grid-cols-2">
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-card-foreground">Nome</label>
+          <div className="relative">
+            <UserRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              placeholder="Maria"
+              className={field}
+            />
+          </div>
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-card-foreground">Sobrenome</label>
+          <div className="relative">
+            <UserRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={sobrenome}
+              onChange={(e) => setSobrenome(e.target.value)}
+              placeholder="Silva"
+              className={field}
+            />
+          </div>
         </div>
       </div>
+
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
@@ -207,6 +227,81 @@ function PerfilTab({ email }: { email: string }) {
       >
         {saving && <Loader2 className="h-4 w-4 animate-spin" />}
         Salvar alterações
+      </button>
+    </form>
+  );
+}
+
+function SenhaTab() {
+  const [atual, setAtual] = useState("");
+  const [nova, setNova] = useState("");
+  const [confirma, setConfirma] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    if (nova.length < 8) {
+      toast.error("A nova senha deve ter pelo menos 8 caracteres.");
+      return;
+    }
+    if (nova !== confirma) {
+      toast.error("As senhas não coincidem.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: nova,
+        ...(atual ? ({ current_password: atual } as { current_password: string }) : {}),
+      });
+      if (error) throw error;
+      toast.success("Senha atualizada.");
+      setAtual("");
+      setNova("");
+      setConfirma("");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Não foi possível atualizar.";
+      toast.error(message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 rounded-3xl border border-border bg-card p-6 shadow-card"
+    >
+      <p className="text-sm text-muted-foreground">
+        Se você entrou com o Google, defina uma senha aqui para também poder entrar por e-mail.
+      </p>
+      {[
+        { label: "Senha atual", value: atual, set: setAtual, ac: "current-password" },
+        { label: "Nova senha", value: nova, set: setNova, ac: "new-password" },
+        { label: "Confirmar nova senha", value: confirma, set: setConfirma, ac: "new-password" },
+      ].map((f) => (
+        <div key={f.label}>
+          <label className="mb-1.5 block text-sm font-medium text-card-foreground">{f.label}</label>
+          <div className="relative">
+            <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="password"
+              value={f.value}
+              onChange={(e) => f.set(e.target.value)}
+              autoComplete={f.ac}
+              placeholder="********"
+              className={field}
+            />
+          </div>
+        </div>
+      ))}
+      <button
+        type="submit"
+        disabled={saving}
+        className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+      >
+        {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+        Atualizar senha
       </button>
     </form>
   );
