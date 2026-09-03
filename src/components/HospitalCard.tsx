@@ -8,7 +8,6 @@ import {
   Info,
   Hospital as HospitalIcon,
 } from "lucide-react";
-import { toast } from "sonner";
 
 import type { Hospital } from "@/lib/hospitals.server";
 import { categoryOf, formatDistance, isUpa } from "@/lib/hospital-utils";
