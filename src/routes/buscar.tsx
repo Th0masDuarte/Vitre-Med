@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { AppNav } from "@/components/AppNav";
 import { HospitalCard, outlineButton } from "@/components/HospitalCard";
-import { ScheduleDialog, field } from "@/components/ScheduleDialog";
+import { field } from "@/components/ScheduleDialog";
 import type { Hospital } from "@/lib/hospitals.server";
 import { categoryOf } from "@/lib/hospital-utils";
 import { useHospitalSearch } from "@/lib/use-hospital-search";
@@ -58,7 +58,6 @@ function BuscarPage() {
   const [maxKm, setMaxKm] = useState(0);
   const [cats, setCats] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortKey>("distance");
-  const [scheduling, setScheduling] = useState<Hospital | null>(null);
   const { user } = useSession();
   const { profile, save } = useProfile();
   const [cepOpen, setCepOpen] = useState(false);
@@ -317,7 +316,7 @@ function BuscarPage() {
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 {visible.map((h) => (
-                  <HospitalCard key={h.id} hospital={h} onSchedule={setScheduling} />
+                  <HospitalCard key={h.id} hospital={h} />
                 ))}
               </div>
             )}
@@ -325,9 +324,6 @@ function BuscarPage() {
         )}
       </main>
 
-      {scheduling && (
-        <ScheduleDialog hospital={scheduling} onClose={() => setScheduling(null)} />
-      )}
     </div>
   );
 }
