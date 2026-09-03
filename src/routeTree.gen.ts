@@ -14,6 +14,7 @@ import { Route as AgendamentosRouteImport } from './routes/agendamentos'
 import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as ContaRouteImport } from './routes/conta'
 import { Route as EntrarRouteImport } from './routes/entrar'
+import { Route as ClinicaIdRouteImport } from './routes/clinica.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,11 @@ const EntrarRoute = EntrarRouteImport.update({
   path: '/entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClinicaIdRoute = ClinicaIdRouteImport.update({
+  id: '/clinica/$id',
+  path: '/clinica/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/buscar': typeof BuscarRoute
   '/conta': typeof ContaRoute
   '/entrar': typeof EntrarRoute
+  '/clinica/$id': typeof ClinicaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/buscar': typeof BuscarRoute
   '/conta': typeof ContaRoute
   '/entrar': typeof EntrarRoute
+  '/clinica/$id': typeof ClinicaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,22 @@ export interface FileRoutesById {
   '/buscar': typeof BuscarRoute
   '/conta': typeof ContaRoute
   '/entrar': typeof EntrarRoute
+  '/clinica/$id': typeof ClinicaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agendamentos' | '/buscar' | '/conta' | '/entrar'
+  fullPaths:
+    '/' | '/agendamentos' | '/buscar' | '/conta' | '/entrar' | '/clinica/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agendamentos' | '/buscar' | '/conta' | '/entrar'
-  id: '__root__' | '/' | '/agendamentos' | '/buscar' | '/conta' | '/entrar'
+  to: '/' | '/agendamentos' | '/buscar' | '/conta' | '/entrar' | '/clinica/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/agendamentos'
+    | '/buscar'
+    | '/conta'
+    | '/entrar'
+    | '/clinica/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +94,7 @@ export interface RootRouteChildren {
   BuscarRoute: typeof BuscarRoute
   ContaRoute: typeof ContaRoute
   EntrarRoute: typeof EntrarRoute
+  ClinicaIdRoute: typeof ClinicaIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +134,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/clinica/$id': {
+      id: '/clinica/$id'
+      path: '/clinica/$id'
+      fullPath: '/clinica/$id'
+      preLoaderRoute: typeof ClinicaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +150,7 @@ const rootRouteChildren: RootRouteChildren = {
   BuscarRoute: BuscarRoute,
   ContaRoute: ContaRoute,
   EntrarRoute: EntrarRoute,
+  ClinicaIdRoute: ClinicaIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

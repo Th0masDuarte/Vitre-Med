@@ -102,15 +102,6 @@ export function HospitalCard({
         </div>
 
         <div className="mt-auto flex flex-wrap gap-2 pt-4">
-          {!upa && (
-            <button
-              onClick={() => onSchedule(h)}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              <CalendarPlus className="h-4 w-4" />
-              Agendar
-            </button>
-          )}
           {!upa && h.phone && (
             <a href={`tel:${h.phone.replace(/\s/g, "")}`} className={outlineButton}>
               <Phone className="h-4 w-4" />
