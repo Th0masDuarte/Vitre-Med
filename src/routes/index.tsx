@@ -4,8 +4,6 @@ import { AlertCircle, Crosshair, Search, Hospital as HospitalIcon } from "lucide
 
 import { AppNav } from "@/components/AppNav";
 import { HospitalCard } from "@/components/HospitalCard";
-import { ScheduleDialog } from "@/components/ScheduleDialog";
-import type { Hospital } from "@/lib/hospitals.server";
 import { useHospitalSearch } from "@/lib/use-hospital-search";
 import { readCachedPosition } from "@/lib/geolocation";
 import { useAppointments } from "@/lib/appointments";
@@ -34,7 +32,6 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { hospitals, origin, loading, locating, error, searchNearMe } = useHospitalSearch();
-  const [scheduling, setScheduling] = useState<Hospital | null>(null);
   const [hasCached, setHasCached] = useState(false);
   const { items: appointments } = useAppointments();
 
@@ -116,7 +113,7 @@ function Index() {
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 {hospitals.slice(0, 12).map((h) => (
-                  <HospitalCard key={h.id} hospital={h} onSchedule={setScheduling} />
+                  <HospitalCard key={h.id} hospital={h} />
                 ))}
               </div>
             )}
@@ -148,7 +145,6 @@ function Index() {
         </p>
       </main>
 
-      {scheduling && <ScheduleDialog hospital={scheduling} onClose={() => setScheduling(null)} />}
     </div>
   );
 }
