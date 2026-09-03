@@ -4,7 +4,6 @@ import { AlertCircle, Crosshair, Search, Hospital as HospitalIcon } from "lucide
 
 import { AppNav } from "@/components/AppNav";
 import { HospitalCard } from "@/components/HospitalCard";
-import type { Hospital } from "@/lib/hospitals.server";
 import { useHospitalSearch } from "@/lib/use-hospital-search";
 import { readCachedPosition } from "@/lib/geolocation";
 import { useAppointments } from "@/lib/appointments";

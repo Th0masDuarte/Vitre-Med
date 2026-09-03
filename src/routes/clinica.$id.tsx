@@ -21,8 +21,7 @@ import { AppNav } from "@/components/AppNav";
 import { outlineButton } from "@/components/HospitalCard";
 import { ScheduleDialog } from "@/components/ScheduleDialog";
 import { fetchPlaceDetails } from "@/lib/hospitals.functions";
-import type { PlaceDetails } from "@/lib/hospitals.server";
-import type { Hospital } from "@/lib/hospitals.server";
+import type { Hospital, PlaceDetails } from "@/lib/hospitals.server";
 import { categoryOf, isUpa } from "@/lib/hospital-utils";
 import { useFavorites } from "@/lib/use-favorites";
 
